@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>出席登録ランチャー — データ共有・取り込み</title>
+  <title>出席登録ランチャー — スケジュール共有</title>
   <style>
     :root {
       --color-bg: #f4f6fa;
@@ -14,15 +14,9 @@
       --color-primary-light: #e8f0fe;
       --color-text: #1a1a2e;
       --color-muted: #5f6368;
-      --color-success-bg: #e6f4ea;
-      --color-success-border: #a8dab5;
       --color-success-text: #137333;
-      --color-danger-bg: #fce8e6;
-      --color-danger-border: #f5c2c0;
-      --color-danger-text: #c5221f;
       --radius-lg: 14px;
       --radius-md: 10px;
-      --radius-sm: 6px;
     }
 
     * {
@@ -93,122 +87,6 @@
       background: var(--color-bg);
     }
 
-    .sync-card[data-state="ready"] .status-banner {
-      background: var(--color-primary-light);
-      border-color: #b8d3fa;
-      color: var(--color-text);
-    }
-
-    .sync-card[data-state="done"] .status-banner {
-      background: var(--color-success-bg);
-      border-color: var(--color-success-border);
-      color: var(--color-success-text);
-      font-weight: 600;
-    }
-
-    .sync-card[data-state="error"] .status-banner {
-      background: var(--color-danger-bg);
-      border-color: var(--color-danger-border);
-      color: var(--color-danger-text);
-      font-weight: 600;
-    }
-
-    .extension-missing-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .sync-card[data-extension="installed"] .extension-missing-panel {
-      display: none;
-    }
-
-    .import-ready-panel {
-      display: none;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .sync-card[data-extension="installed"][data-state="ready"] .import-ready-panel,
-    .sync-card[data-extension="installed"][data-state="importing"] .import-ready-panel {
-      display: flex;
-    }
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-    }
-
-    .summary-item {
-      background: var(--color-bg);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-sm);
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .summary-label {
-      font-size: 0.75rem;
-      color: var(--color-muted);
-    }
-
-    .summary-value {
-      font-size: 1rem;
-      font-weight: 700;
-    }
-
-    .preview-heading {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--color-muted);
-    }
-
-    .preview-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      max-height: 240px;
-      overflow-y: auto;
-    }
-
-    .preview-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-sm);
-      background: var(--color-card);
-      font-size: 0.85rem;
-    }
-
-    .preview-time {
-      font-weight: 700;
-      color: var(--color-primary);
-      white-space: nowrap;
-    }
-
-    .preview-room {
-      font-weight: 700;
-      background: var(--color-bg);
-      padding: 1px 6px;
-      border-radius: 4px;
-      white-space: nowrap;
-    }
-
-    .preview-label {
-      color: var(--color-text);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      flex: 1;
-      min-width: 0;
-    }
-
     .action-group {
       display: flex;
       flex-direction: column;
@@ -241,11 +119,6 @@
       background: var(--color-primary-hover);
     }
 
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
     .btn-outline {
       background: var(--color-card);
       color: var(--color-primary);
@@ -271,62 +144,24 @@
   </style>
 </head>
 <body>
-  <main class="sync-card" id="sync-app" data-extension="missing" data-state="waiting">
+  <main class="sync-card">
     <header class="sync-header">
       <span class="sync-badge">出席登録ランチャー</span>
-      <h1 class="sync-title">端末間データ共有</h1>
+      <h1 class="sync-title">スケジュール共有</h1>
       <p class="sync-subtitle">URL 内のデータだけで完結するため、スケジュールや設定はサーバーに送信されません。</p>
     </header>
 
-    <p class="status-banner" id="sync-status-message" role="status">
-      このページ上で拡張機能が自動起動しませんでした。拡張機能が入ったブラウザで、このまま拡張機能アイコンを開くと URL を自動検出して取り込めます（または下のボタンで共有 URL をコピーして設定タブから貼り付けてください）。
+    <p class="status-banner" role="status">
+      出席登録ランチャー拡張機能がこのブラウザにインストールされていないか、旧バージョンのままになっています。拡張機能（v3.3.2 以降）を入れたブラウザ（Firefox / Chrome / Edge）でこの共有 URL を開くと、自動で取り込み画面が開きます。
     </p>
 
-    <section class="import-ready-panel" aria-label="取り込みプレビュー">
-      <dl class="summary-grid">
-        <article class="summary-item">
-          <dt class="summary-label">スケジュール</dt>
-          <dd class="summary-value" id="sync-count-schedules">0件</dd>
-        </article>
-        <article class="summary-item">
-          <dt class="summary-label">登録教室</dt>
-          <dd class="summary-value" id="sync-count-rooms">0件</dd>
-        </article>
-        <article class="summary-item">
-          <dt class="summary-label">自動出席クリック</dt>
-          <dd class="summary-value" id="sync-setting-auto-attend">OFF</dd>
-        </article>
-        <article class="summary-item">
-          <dt class="summary-label">開始時刻オフセット</dt>
-          <dd class="summary-value" id="sync-setting-offset">定刻 (0分)</dd>
-        </article>
-      </dl>
-
-      <h2 class="preview-heading">スケジュール一覧</h2>
-      <ul class="preview-list" id="sync-schedule-preview"></ul>
-
-      <nav class="action-group" aria-label="取り込み実行">
-        <button type="button" class="btn btn-primary" id="btn-confirm-sync-import">この端末へ取り込む</button>
-      </nav>
-    </section>
-
-    <section class="extension-missing-panel" aria-label="拡張機能未検出時の案内">
-      <nav class="action-group" aria-label="代替操作">
-        <button type="button" class="btn btn-primary" id="btn-copy-current-url">この共有 URL をコピー</button>
-        <a class="btn btn-outline" href="https://github.com/iotaish/attendance_extension/releases/latest" target="_blank" rel="noopener noreferrer">拡張機能（最新リリース）を開く</a>
-      </nav>
-      <p class="fallback-copy-msg" id="fallback-copy-msg" role="status"></p>
-      <p class="note-text">※ アプリ内ブラウザで開いた場合は、メニューから「Firefox で開く」等を選ぶと拡張機能が自動で反応します。</p>
-    </section>
+    <nav class="action-group" aria-label="代替操作">
+      <button type="button" class="btn btn-primary" id="btn-copy-current-url">この共有 URL をコピー</button>
+      <a class="btn btn-outline" href="https://github.com/iotaish/attendance_extension/releases/latest" target="_blank" rel="noopener noreferrer">拡張機能（最新リリース）を開く</a>
+    </nav>
+    <p class="fallback-copy-msg" id="fallback-copy-msg" role="status"></p>
+    <p class="note-text">※ アプリ内ブラウザで開いた場合は、メニューから「Firefox で開く」等を選ぶと拡張機能が自動で反応します。</p>
   </main>
-
-  <template id="tmpl-sync-schedule-item">
-    <li class="preview-item">
-      <span class="preview-time"></span>
-      <span class="preview-room"></span>
-      <span class="preview-label"></span>
-    </li>
-  </template>
 
   <script>
     (() => {
@@ -336,7 +171,7 @@
         copyBtn.addEventListener('click', async () => {
           try {
             await navigator.clipboard.writeText(window.location.href);
-            if (msgEl) msgEl.textContent = '共有 URL をコピーしました。拡張機能の入ったブラウザで開くか、設定タブへ貼り付けてください。';
+            if (msgEl) msgEl.textContent = '共有 URL をコピーしました。拡張機能の入ったブラウザで開いてください。';
           } catch (_) {
             if (msgEl) msgEl.textContent = 'コピーできませんでした。アドレスバーの URL を手動でコピーしてください。';
           }
